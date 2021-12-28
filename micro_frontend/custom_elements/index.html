@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      "
+    >
+      <!-- [team_color]-[feature] -->
+      <!-- <mixin-text></mixin-text> -->
+      <mixin-text-v2 project="math"></mixin-text-v2>
+    </div>
+    <script>
+      class MixinText extends HTMLElement {
+        connectedCallback() {
+          this.innerHTML = `<div
+                  style="
+                      background-color:#e80202;
+                      font-size: 20px;
+                      color: #fff;
+                      line-height: 40px;
+                      display: block;
+                      padding: 10px;
+                      width: 155px;
+                      letter-spacing: 4px;
+                      text-transform: capitalize;
+                  ">mixin views</div>`;
+        }
+
+        disconnectedCallback() {}
+      }
+      window.customElements.define("mixin-text", MixinText);
+
+      class MixinTextV2 extends HTMLElement {
+        static scores = {
+          math: "99",
+          english: "98",
+          chinese: "97",
+        };
+
+        static get observedAttributes() {
+          return ["project"];
+        }
+
+        render() {
+          const project = this.getAttribute("project");
+
+          const score = MixinTextV2.scores[project];
+
+          this.innerHTML = `<button style="
+                      background-color:#e80202;
+                      color: #fff;
+                      display: block;
+                      font-size: 20px;
+                      padding: 5px 20px;
+                      margin: 10px;
+                      border: 2px solid #e80202;
+                      border-radius: 10px;
+                      box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.2);
+                    ">${project}:${score}</button>`;
+
+          this.firstChild.addEventListener("click", this.changeProject);
+
+          this.firstChild.addEventListener("project:changed", () => {
+            // 选择一个数组随机值
+            const randomArrSeed = (arr) =>
+              arr[Math.floor(Math.random() * arr.length)];
+
+            const random_key = randomArrSeed(Object.keys(MixinTextV2.scores));
+
+            console.log("project changed", random_key);
+
+            document
+              .querySelector("mixin-text-v2")
+              .setAttribute("project", random_key);
+          });
+        }
+
+        changeProject() {
+          this.dispatchEvent(
+            new CustomEvent("project:changed", {
+              bubbles: true,
+            })
+          );
+        }
+
+        connectedCallback() {
+          console.log("connectedCallback");
+          this.render();
+        }
+
+        attributeChangedCallback(attr, oldValue, newValue) {
+          console.log("attributeChangedCallback");
+          this.render();
+        }
+
+        disconnectedCallback() {
+          console.log("disconnectedCallback");
+          this.firstChild.removeEventListener("click", this.changeProject);
+        }
+      }
+
+      window.customElements.define("mixin-text-v2", MixinTextV2);
+    </script>
+  </body>
+</html>
